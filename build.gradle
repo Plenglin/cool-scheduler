@@ -3,6 +3,13 @@ plugins {
     id 'idea'
 }
 
+idea {
+    module {
+        downloadJavadoc = true
+        downloadSources = true
+    }
+}
+
 group 'com.ironpanthers'
 version '1.0-SNAPSHOT'
 

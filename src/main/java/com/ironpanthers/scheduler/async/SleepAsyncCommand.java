@@ -1,8 +1,11 @@
 package com.ironpanthers.scheduler.async;
 
-public class SleepAsyncCommand implements AsyncCommand {
+/**
+ * Does nothing for a certain amount of time. Good for use in {@link SequentialAsyncCommand}.
+ */
+public class SleepAsyncCommand extends AsyncCommand {
 
-    private long time;
+    private final long time;
 
     public SleepAsyncCommand(long time) {
         this.time = time;
@@ -10,6 +13,14 @@ public class SleepAsyncCommand implements AsyncCommand {
 
     @Override
     public void executeCommand(AsyncEventLoop eventLoop) {
-
+        Globals.executor.submit(() -> {
+            try {
+                Thread.sleep(time);
+            } catch (InterruptedException e) {
+                e.printStackTrace();
+            } finally {
+                finish();
+            }
+        });
     }
 }

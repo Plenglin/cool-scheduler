@@ -20,10 +20,7 @@ public class AsyncEventLoop {
     public void run() throws InterruptedException {
         while (isRunning) {
             AsyncCommand cmd = queue.take();
-            synchronized (cmd) {
-                cmd.executeCommand(this);
-                cmd.notifyAll();
-            }
+            cmd.executeCommand(this);
         }
         queue.clear();
     }
