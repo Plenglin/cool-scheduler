@@ -8,12 +8,17 @@ package com.ironpanthers.scheduler.async;
 public abstract class AsyncCommand {
 
     private final Object lock = new Object();
+    private boolean running = true;
 
     /**
      * Blocks the current thread until this command is finished.
-     * @throws InterruptedException
+     *
+     * @throws InterruptedException if it gets interrupted while blocking
      */
     public final void waitUntilFinished() throws InterruptedException {
+        if (!running) {
+            return;
+        }
         synchronized (lock) {
             lock.wait();
         }
@@ -24,6 +29,7 @@ public abstract class AsyncCommand {
      */
     protected final void finish() {
         synchronized (lock) {
+            running = false;
             lock.notifyAll();
         }
     }

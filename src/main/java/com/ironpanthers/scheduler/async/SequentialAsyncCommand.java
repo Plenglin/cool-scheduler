@@ -18,9 +18,8 @@ public class SequentialAsyncCommand extends AsyncCommand {
         Globals.executor.submit(() -> {
             for (AsyncCommand cmd : commands) {
                 try {
-                    //noinspection SynchronizationOnLocalVariableOrMethodParameter
+                    eventLoop.scheduleCommand(cmd);
                     synchronized (cmd) {
-                        eventLoop.scheduleCommand(cmd);
                         cmd.waitUntilFinished();
                     }
                 } catch (InterruptedException e) {
