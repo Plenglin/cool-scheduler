@@ -1,13 +1,11 @@
 package com.ironpanthers.scheduler.async;
 
-import sun.plugin.dom.exception.InvalidStateException;
-
 import java.util.HashMap;
 import java.util.concurrent.*;
 
 /**
- * Does cooperative multitasking to run lots of things at once in a single thread. Heavily inspired by JavaScript.
- *
+ * Uses cooperative multitasking to run lots of things at once in a single thread. Heavily inspired by JavaScript and
+ * the async.js library.
  */
 public class AsyncEventLoop {
 
@@ -27,7 +25,7 @@ public class AsyncEventLoop {
      */
     public synchronized void run() {
         if (runningThread != null) {
-            throw new InvalidStateException("This event loop is already running!");
+            throw new IllegalStateException("This event loop is already running!");
         }
         try {
             runningThread = Thread.currentThread();
@@ -92,21 +90,96 @@ public class AsyncEventLoop {
         intervals.get(intervalId).cancel(true);
     }
 
+    /**
+     * Run a set of tasks all at once.
+     * @param tasks the tasks to run
+     * @param onComplete what is called when any one of the tasks finishes. It is called once and only once.
+     */
     public void parallelAny(CallbackNotifyTask[] tasks, AsyncTask onComplete) {
-        TaskCompletedCallback cb = new TaskCompletedCallback() {
-            private boolean called = false;
-
-            @Override
-            public void finish() {
-                if (!called) {
-                    scheduleCommand(onComplete);
-                    called = true;
-                }
-            }
-        };
+        TaskCompletedCallback cb = new ParallelAnyCallback(onComplete);
         for (CallbackNotifyTask t: tasks) {
             scheduleCommand(l -> t.execute(cb, l));
         }
     }
 
+    /**
+     * Run a set of tasks all at once.
+     * @param tasks the tasks to run
+     * @param onComplete what is called when all of the tasks finishes.
+     */
+    public void parallelAll(CallbackNotifyTask[] tasks, AsyncTask onComplete) {
+        TaskCompletedCallback cb = new ParallelAllCallback(tasks, onComplete);
+        for (CallbackNotifyTask t: tasks) {
+            scheduleCommand(l -> t.execute(cb, l));
+        }
+    }
+
+    /**
+     * Run a set of tasks, one after another.
+     * @param tasks
+     */
+    public void sequential(CallbackNotifyTask[] tasks) {
+        TaskCompletedCallback cb = new SequentialCallback(tasks);
+        scheduleCommand(l -> tasks[0].execute(cb, l));
+    }
+
+    private class SequentialCallback implements TaskCompletedCallback {
+        private final CallbackNotifyTask[] tasks;
+        private int index;
+
+        SequentialCallback(CallbackNotifyTask[] tasks) {
+            this.tasks = tasks;
+            index = 0;
+        }
+
+        @Override
+        public void finish() {
+            index++;
+            if (index < tasks.length) {
+                scheduleCommand(l -> tasks[index].execute(this, l));
+            } else {
+                throw new IllegalStateException("This callback was called multiple times in one CallbackNotifyTask!");
+            }
+        }
+    }
+
+    private class ParallelAllCallback implements TaskCompletedCallback {
+        private final CallbackNotifyTask[] tasks;
+        private final AsyncTask onComplete;
+        private int left;
+
+        ParallelAllCallback(CallbackNotifyTask[] tasks, AsyncTask onComplete) {
+            this.tasks = tasks;
+            this.onComplete = onComplete;
+            left = tasks.length;
+        }
+
+        @Override
+        public void finish() {
+            left--;
+            if (left == 0) {
+                scheduleCommand(onComplete);
+            } else if (left < 0) {
+                throw new IllegalStateException("This callback was called multiple times in one CallbackNotifyTask!");
+            }
+        }
+    }
+
+    private class ParallelAnyCallback implements TaskCompletedCallback {
+        private final AsyncTask onComplete;
+        private boolean called;
+
+        ParallelAnyCallback(AsyncTask onComplete) {
+            this.onComplete = onComplete;
+            called = false;
+        }
+
+        @Override
+        public void finish() {
+            if (!called) {
+                scheduleCommand(onComplete);
+                called = true;
+            }
+        }
+    }
 }
