@@ -12,7 +12,7 @@ public class SubsystemDefaultTest extends TestCase {
 
     @Override
     protected void setUp() throws Exception {
-        sa.defaultCommand = ca;
+        sa.setDefaultCommand(ca);
         scheduler.registerSubsystem(sa);
     }
 

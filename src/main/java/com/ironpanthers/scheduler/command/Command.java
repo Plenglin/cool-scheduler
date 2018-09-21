@@ -9,6 +9,7 @@ public abstract class Command {
     private long lastCalled = 0L;
     private Set<Subsystem> requiredSubsystems = new HashSet<Subsystem>();
     private boolean isTerminated = false;
+    protected Scheduler scheduler;
     Command next = null;
     Command prev = null;
 
@@ -53,11 +54,12 @@ public abstract class Command {
 
     /**
      * Called once and only once after onLoop returns false.
-     * @param interrupted was this command interrupted by another command?
+     * @param interrupted was this command kicked out by another command?
      */
     public void onTerminate(boolean interrupted) {}
 
-    final void _initialize() {
+    final void _initialize(Scheduler scheduler) {
+        this.scheduler = scheduler;
         onInitialize();
     }
 
@@ -68,12 +70,21 @@ public abstract class Command {
         return result;
     }
 
-    final void _terminate(boolean interrupted) {
-        onTerminate(interrupted);
+    final void _terminateInterrupted() {
+        onTerminate(true);
         isTerminated = true;
         remove();
         for (Subsystem subsystem: requiredSubsystems) {
-            subsystem.initDefaultCommand();
+            scheduler.addCommand(subsystem.getDefaultCommand());
+        }
+    }
+
+    final void _terminateNormally() {
+        onTerminate(false);
+        isTerminated = true;
+        remove();
+        for (Subsystem subsystem: requiredSubsystems) {
+            scheduler.addCommand(subsystem.getDefaultCommand());
         }
     }
 }

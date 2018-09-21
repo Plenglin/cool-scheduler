@@ -17,48 +17,48 @@ public class NoSubsystemTest extends TestCase {
 
         scheduler.addCommand(ca);
         scheduler.run();
-        assertEquals(ca.timesInitialized, 1);
-        assertEquals(ca.timesLooped, 1);
-        assertEquals(ca.timesTerminated, 0);
+        assertEquals(1, ca.timesInitialized);
+        assertEquals(1, ca.timesLooped);
+        assertEquals(0, ca.timesTerminated);
 
         scheduler.run();
-        assertEquals(ca.timesInitialized, 1);
-        assertEquals(ca.timesLooped, 2);
-        assertEquals(ca.timesTerminated, 0);
+        assertEquals(1, ca.timesInitialized);
+        assertEquals(2, ca.timesLooped);
+        assertEquals(0, ca.timesTerminated);
 
         ca.shouldRunNextLoop = false;
         scheduler.run();
-        assertEquals(ca.timesInitialized, 1);
-        assertEquals(ca.timesLooped, 3);
-        assertEquals(ca.timesTerminated, 1);
+        assertEquals(1, ca.timesInitialized);
+        assertEquals(3, ca.timesLooped);
+        assertEquals(1, ca.timesTerminated);
         assertFalse(ca.wasInterrupted);
 
         scheduler.addCommand(cb);
         scheduler.addCommand(cc);
         scheduler.run();
 
-        assertEquals(ca.timesInitialized, 1);
-        assertEquals(ca.timesLooped, 3);
-        assertEquals(ca.timesTerminated, 1);
+        assertEquals(1, ca.timesInitialized);
+        assertEquals(3, ca.timesLooped);
+        assertEquals(1, ca.timesTerminated);
 
-        assertEquals(cb.timesInitialized, 1);
-        assertEquals(cb.timesLooped, 1);
-        assertEquals(cb.timesTerminated, 0);
+        assertEquals(1, cb.timesInitialized);
+        assertEquals(1, cb.timesLooped);
+        assertEquals(0, cb.timesTerminated);
 
-        assertEquals(cc.timesInitialized, 1);
-        assertEquals(cc.timesLooped, 1);
-        assertEquals(cc.timesTerminated, 0);
+        assertEquals(1, cc.timesInitialized);
+        assertEquals(1, cc.timesLooped);
+        assertEquals(0, cc.timesTerminated);
 
         cb.shouldRunNextLoop = false;
         scheduler.run();
-        assertEquals(cb.timesInitialized, 1);
-        assertEquals(cb.timesLooped, 2);
-        assertEquals(cb.timesTerminated, 1);
+        assertEquals(1, cb.timesInitialized);
+        assertEquals(2, cb.timesLooped);
+        assertEquals(1, cb.timesTerminated);
         assertFalse(cb.wasInterrupted);
 
-        assertEquals(cc.timesInitialized, 1);
-        assertEquals(cc.timesLooped, 2);
-        assertEquals(cc.timesTerminated, 0);
+        assertEquals(1, cc.timesInitialized);
+        assertEquals(2, cc.timesLooped);
+        assertEquals(0, cc.timesTerminated);
     }
 
 }

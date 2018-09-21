@@ -2,19 +2,22 @@ package com.ironpanthers.scheduler.command;
 
 public abstract class Subsystem {
 
-    private Command currentCommand;
+    Command currentCommand;
     protected Scheduler scheduler;
+    boolean hasNewCommand = false;
 
-    public Command getCurrentCommand() {
+    private Command defaultCommand;
+
+    protected void setDefaultCommand(Command command) {
+        this.defaultCommand = command;
+    }
+
+    public Command getDefaultCommand() {
+        return defaultCommand;
+    }
+
+    public final Command getCurrentCommand() {
         return currentCommand;
     }
 
-    public void initDefaultCommand() {}
-
-    public void setCurrentCommand(Command newCommand) {
-        if (currentCommand != null) {
-            currentCommand._terminate(true);
-        }
-        currentCommand = newCommand;
-    }
 }
