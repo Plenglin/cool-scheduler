@@ -4,8 +4,13 @@ import java.util.HashMap;
 import java.util.concurrent.*;
 
 /**
- * Uses cooperative multitasking to run lots of things at once in a single thread. Heavily inspired by JavaScript and
- * the async.js library.
+ * <p>Uses cooperative multitasking to run lots of things at once in a single thread. Heavily inspired by JavaScript and
+ * the async.js library.</p>
+ * <p>Since it is inspired by JavaScript, it also suffers from the same drawbacks. You should not use
+ * the event loop for frequent, heavy computation. It is better at doing many small things (like waiting for x ms or for a
+ * command to finish) than it is at doing a few big things (like PID, blocking operations).</p>
+ * <p>To do a blocking operation, you should take a thread from the included executor, run the blocking operation inside
+ * that thread, and schedule a task on this event loop after the operation finishes.</p>
  */
 public class AsyncEventLoop {
 
@@ -16,7 +21,7 @@ public class AsyncEventLoop {
     private HashMap<Long, Future<Void>> intervals = new HashMap<>();
     private long nextIntervalId = 0;
 
-    public void scheduleCommand(AsyncTask cmd) {
+    public void scheduleTask(AsyncTask cmd) {
         queue.add(cmd);
     }
 
@@ -55,7 +60,7 @@ public class AsyncEventLoop {
         executor.submit(() -> {
             try {
                 Thread.sleep(time);
-                scheduleCommand(run);
+                scheduleTask(run);
             } catch (InterruptedException e) {
                 e.printStackTrace();
             }
@@ -73,7 +78,7 @@ public class AsyncEventLoop {
         Future<Void> future = executor.submit(() -> {
             Thread.sleep(delay);
             while (true) {
-                scheduleCommand(run);
+                scheduleTask(run);
                 Thread.sleep(period);
             }
         });
@@ -98,7 +103,7 @@ public class AsyncEventLoop {
     public void parallelAny(CallbackNotifyTask[] tasks, AsyncTask onComplete) {
         TaskCompletedCallback cb = new ParallelAnyCallback(onComplete);
         for (CallbackNotifyTask t: tasks) {
-            scheduleCommand(l -> t.execute(cb, l));
+            scheduleTask(l -> t.execute(cb, l));
         }
     }
 
@@ -110,7 +115,7 @@ public class AsyncEventLoop {
     public void parallelAll(CallbackNotifyTask[] tasks, AsyncTask onComplete) {
         TaskCompletedCallback cb = new ParallelAllCallback(tasks, onComplete);
         for (CallbackNotifyTask t: tasks) {
-            scheduleCommand(l -> t.execute(cb, l));
+            scheduleTask(l -> t.execute(cb, l));
         }
     }
 
@@ -120,7 +125,7 @@ public class AsyncEventLoop {
      */
     public void sequential(CallbackNotifyTask[] tasks) {
         TaskCompletedCallback cb = new SequentialCallback(tasks);
-        scheduleCommand(l -> tasks[0].execute(cb, l));
+        scheduleTask(l -> tasks[0].execute(cb, l));
     }
 
     private class SequentialCallback implements TaskCompletedCallback {
@@ -136,7 +141,7 @@ public class AsyncEventLoop {
         public void finish() {
             index++;
             if (index < tasks.length) {
-                scheduleCommand(l -> tasks[index].execute(this, l));
+                scheduleTask(l -> tasks[index].execute(this, l));
             } else {
                 throw new IllegalStateException("This callback was called multiple times in one CallbackNotifyTask!");
             }
@@ -158,7 +163,7 @@ public class AsyncEventLoop {
         public void finish() {
             left--;
             if (left == 0) {
-                scheduleCommand(onComplete);
+                scheduleTask(onComplete);
             } else if (left < 0) {
                 throw new IllegalStateException("This callback was called multiple times in one CallbackNotifyTask!");
             }
@@ -177,7 +182,7 @@ public class AsyncEventLoop {
         @Override
         public void finish() {
             if (!called) {
-                scheduleCommand(onComplete);
+                scheduleTask(onComplete);
                 called = true;
             }
         }
