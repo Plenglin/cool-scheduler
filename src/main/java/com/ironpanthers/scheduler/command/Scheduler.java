@@ -24,6 +24,13 @@ public class Scheduler implements Iterable<Command> {
     }
 
     private void addNewCommands() {
+        if (commandsToAdd.isEmpty()) return;
+
+        // Reset subsystems
+        for (Subsystem subsystem: subsystems) {
+            subsystem.hasNewCommand = false;
+        }
+
         // Drain the elements of the queue to the scheduler.
         Command iterAdd = sentinel.prev;
         Command iterLock = sentinel.prev;  // reference for locking subsystems later
@@ -59,6 +66,7 @@ public class Scheduler implements Iterable<Command> {
             iterInit._initialize(this);
             iterInit = iterInit.next;
         }
+
     }
 
     /**

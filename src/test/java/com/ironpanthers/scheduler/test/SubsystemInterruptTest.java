@@ -1,16 +1,17 @@
 package com.ironpanthers.scheduler.test;
 
 import com.ironpanthers.scheduler.command.Scheduler;
-import junit.framework.TestCase;
+import org.junit.Assert;
+import org.junit.Before;
 import org.junit.Test;
 
-public class SubsystemInterruptTest extends TestCase {
+public class SubsystemInterruptTest {
 
     Scheduler scheduler = new Scheduler();
     TestSubsystem sa = new TestSubsystem();
 
-    @Override
-    protected void setUp() throws Exception {
+    @Before
+    public void setUp() {
         scheduler.registerSubsystem(sa);
     }
 
@@ -21,15 +22,15 @@ public class SubsystemInterruptTest extends TestCase {
 
         scheduler.addCommand(ca);
         scheduler.run();
-        assertEquals(1, ca.timesLooped);
-        assertEquals(0, cb.timesLooped);
-        assertEquals(ca, sa.getCurrentCommand());
+        Assert.assertEquals(1, ca.timesLooped);
+        Assert.assertEquals(0, cb.timesLooped);
+        Assert.assertEquals(ca, sa.getCurrentCommand());
 
         scheduler.addCommand(cb);
         scheduler.run();
-        assertEquals(cb, sa.getCurrentCommand());
-        assertEquals(1, ca.timesTerminated);
-        assertTrue(ca.wasInterrupted);
+        Assert.assertEquals(cb, sa.getCurrentCommand());
+        Assert.assertEquals(1, ca.timesTerminated);
+        Assert.assertTrue(ca.wasInterrupted);
     }
 
 }
