@@ -1,5 +1,7 @@
 package com.ironpanthers.scheduler.command;
 
+import com.sun.istack.internal.NotNull;
+
 import java.util.HashSet;
 import java.util.Iterator;
 import java.util.Set;
@@ -11,8 +13,14 @@ public class Scheduler implements Iterable<Command> {
     private SentinelNode sentinel = new SentinelNode();
     private Set<Subsystem> subsystems = new HashSet<>();
 
-    public void registerSubsystem(Subsystem subsystem) {
+    public void addCommand(@NotNull Command command) {
+        commandsToAdd.add(command);
+    }
+
+    public void registerSubsystem(@NotNull Subsystem subsystem) {
         subsystems.add(subsystem);
+        subsystem.scheduler = this;
+        subsystem.initDefaultCommand();
     }
 
     private void addNewCommands() {
@@ -20,21 +28,15 @@ public class Scheduler implements Iterable<Command> {
         while (!commandsToAdd.isEmpty()) {
             Command newCommand = commandsToAdd.poll();
             newCommand._initialize();
-            command.append(newCommand);
+            command.next = newCommand;
+            newCommand.prev = command;
+            for (Subsystem subsystem: newCommand.getRequiredSubsystems()) {
+                subsystem.setCurrentCommand(newCommand);
+            }
             command = newCommand;
         }
-    }
-
-    private void executeCurrentCommands() {
-        Command command = sentinel.next;
-        while (command != sentinel) {
-            if (!command.isInitialized()) {
-                command._initialize();
-            }
-            if (!command._loop()) {
-                command._terminate(false);
-            }
-        }
+        command.next = sentinel;
+        sentinel.prev = command;
     }
 
     /**
@@ -42,7 +44,13 @@ public class Scheduler implements Iterable<Command> {
      */
     public void run() {
         addNewCommands();
-        executeCurrentCommands();
+        Command command = sentinel.next;
+        while (command != sentinel) {
+            if (!command._loop()) {
+                command._terminate(false);
+            }
+            command = command.next;
+        }
     }
 
     @Override

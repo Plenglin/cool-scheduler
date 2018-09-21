@@ -8,14 +8,9 @@ public abstract class Command {
     private final Object lock = new Object();
     private long lastCalled = 0L;
     private Set<Subsystem> requiredSubsystems = new HashSet<Subsystem>();
-    private boolean isInitialized = false;
     private boolean isTerminated = false;
     Command next = null;
     Command prev = null;
-
-    public boolean isInitialized() {
-        return isInitialized;
-    }
 
     public boolean isTerminated() {
         return isTerminated;
@@ -28,11 +23,6 @@ public abstract class Command {
     private void remove() {
         prev.next = next;
         next.prev = prev;
-    }
-
-    void append(Command command) {
-        command.prev = this;
-        next = command;
     }
 
     protected void require(Subsystem subsystem) {
@@ -55,7 +45,7 @@ public abstract class Command {
     public void onInitialize() {}
 
     /**
-     * Called as fast as possible.
+     * Called as fast as possible. Guaranteed to be called at least once.
      * @param dt time since this was last called
      * @return should this command be called again?
      */
@@ -69,10 +59,6 @@ public abstract class Command {
 
     final void _initialize() {
         onInitialize();
-        isInitialized = true;
-        for (Subsystem subsystem: requiredSubsystems) {
-            subsystem.getCurrentCommand()._terminate(true);
-        }
     }
 
     final boolean _loop() {
@@ -86,5 +72,8 @@ public abstract class Command {
         onTerminate(interrupted);
         isTerminated = true;
         remove();
+        for (Subsystem subsystem: requiredSubsystems) {
+            subsystem.initDefaultCommand();
+        }
     }
 }
