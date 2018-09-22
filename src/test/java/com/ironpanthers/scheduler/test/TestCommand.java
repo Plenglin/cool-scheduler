@@ -5,11 +5,18 @@ import com.ironpanthers.scheduler.command.Subsystem;
 
 public class TestCommand extends Command {
 
+    private static int nextId = 0;
+
+    public static void resetIdCounter() {
+        nextId = 0;
+    }
+
     public int timesInitialized = 0;
     public int timesLooped = 0;
     public int timesTerminated = 0;
     public boolean wasInterrupted = false;
     public boolean shouldRunNextLoop = true;
+    public int id = nextId++;
 
     public TestCommand(Subsystem... requiredSubsystems) {
         for (Subsystem subsystem: requiredSubsystems) {
@@ -42,4 +49,8 @@ public class TestCommand extends Command {
         timesTerminated++;
     }
 
+    @Override
+    public String toString() {
+        return "TestCommand(" + id + ")";
+    }
 }

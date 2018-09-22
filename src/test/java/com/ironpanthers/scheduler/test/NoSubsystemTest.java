@@ -2,10 +2,11 @@ package com.ironpanthers.scheduler.test;
 
 import com.ironpanthers.scheduler.command.Scheduler;
 import junit.framework.TestCase;
+import org.junit.Assert;
 import org.junit.Test;
 
 
-public class NoSubsystemTest extends TestCase {
+public class NoSubsystemTest {
 
     Scheduler scheduler = new Scheduler();
 
@@ -17,48 +18,48 @@ public class NoSubsystemTest extends TestCase {
 
         scheduler.addCommand(ca);
         scheduler.run();
-        assertEquals(1, ca.timesInitialized);
-        assertEquals(1, ca.timesLooped);
-        assertEquals(0, ca.timesTerminated);
+        Assert.assertEquals(1, ca.timesInitialized);
+        Assert.assertEquals(1, ca.timesLooped);
+        Assert.assertEquals(0, ca.timesTerminated);
 
         scheduler.run();
-        assertEquals(1, ca.timesInitialized);
-        assertEquals(2, ca.timesLooped);
-        assertEquals(0, ca.timesTerminated);
+        Assert.assertEquals(1, ca.timesInitialized);
+        Assert.assertEquals(2, ca.timesLooped);
+        Assert.assertEquals(0, ca.timesTerminated);
 
         ca.shouldRunNextLoop = false;
         scheduler.run();
-        assertEquals(1, ca.timesInitialized);
-        assertEquals(3, ca.timesLooped);
-        assertEquals(1, ca.timesTerminated);
-        assertFalse(ca.wasInterrupted);
+        Assert.assertEquals(1, ca.timesInitialized);
+        Assert.assertEquals(3, ca.timesLooped);
+        Assert.assertEquals(1, ca.timesTerminated);
+        Assert.assertFalse(ca.wasInterrupted);
 
         scheduler.addCommand(cb);
         scheduler.addCommand(cc);
         scheduler.run();
 
-        assertEquals(1, ca.timesInitialized);
-        assertEquals(3, ca.timesLooped);
-        assertEquals(1, ca.timesTerminated);
+        Assert.assertEquals(1, ca.timesInitialized);
+        Assert.assertEquals(3, ca.timesLooped);
+        Assert.assertEquals(1, ca.timesTerminated);
 
-        assertEquals(1, cb.timesInitialized);
-        assertEquals(1, cb.timesLooped);
-        assertEquals(0, cb.timesTerminated);
+        Assert.assertEquals(1, cb.timesInitialized);
+        Assert.assertEquals(1, cb.timesLooped);
+        Assert.assertEquals(0, cb.timesTerminated);
 
-        assertEquals(1, cc.timesInitialized);
-        assertEquals(1, cc.timesLooped);
-        assertEquals(0, cc.timesTerminated);
+        Assert.assertEquals(1, cc.timesInitialized);
+        Assert.assertEquals(1, cc.timesLooped);
+        Assert.assertEquals(0, cc.timesTerminated);
 
         cb.shouldRunNextLoop = false;
         scheduler.run();
-        assertEquals(1, cb.timesInitialized);
-        assertEquals(2, cb.timesLooped);
-        assertEquals(1, cb.timesTerminated);
-        assertFalse(cb.wasInterrupted);
+        Assert.assertEquals(1, cb.timesInitialized);
+        Assert.assertEquals(2, cb.timesLooped);
+        Assert.assertEquals(1, cb.timesTerminated);
+        Assert.assertFalse(cb.wasInterrupted);
 
-        assertEquals(1, cc.timesInitialized);
-        assertEquals(2, cc.timesLooped);
-        assertEquals(0, cc.timesTerminated);
+        Assert.assertEquals(1, cc.timesInitialized);
+        Assert.assertEquals(2, cc.timesLooped);
+        Assert.assertEquals(0, cc.timesTerminated);
     }
 
 }

@@ -7,7 +7,7 @@ public abstract class Command {
 
     private final Object lock = new Object();
     private long lastCalled = 0L;
-    private Set<Subsystem> requiredSubsystems = new HashSet<Subsystem>();
+    private Set<Subsystem> requiredSubsystems = new HashSet<>();
     private boolean isTerminated = false;
     protected Scheduler scheduler;
     Command next = null;
@@ -74,17 +74,11 @@ public abstract class Command {
         onTerminate(true);
         isTerminated = true;
         remove();
-        for (Subsystem subsystem: requiredSubsystems) {
-            scheduler.addCommand(subsystem.getDefaultCommand());
-        }
     }
 
     final void _terminateNormally() {
         onTerminate(false);
         isTerminated = true;
         remove();
-        for (Subsystem subsystem: requiredSubsystems) {
-            scheduler.addCommand(subsystem.getDefaultCommand());
-        }
     }
 }
