@@ -41,19 +41,19 @@ public abstract class Command {
     }
 
     /**
-     * Called once and only once shortly after this command is added to Scheduler.
+     * Guaranteed to be called once and only once shortly after this command is added to Scheduler.
      */
     public void onInitialize() {}
 
     /**
-     * Called as fast as possible. Guaranteed to be called at least once.
+     * Called as fast as possible. Not guaranteed to ever be called.
      * @param dt time since this was last called
      * @return should this command be called again?
      */
     public boolean onLoop(double dt) { return false; }
 
     /**
-     * Called once and only once after onLoop returns false.
+     * Guaranteed to be called once and only once after onLoop returns false.
      * @param interrupted was this command kicked out by another command?
      */
     public void onTerminate(boolean interrupted) {}

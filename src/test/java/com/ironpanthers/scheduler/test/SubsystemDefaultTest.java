@@ -28,19 +28,20 @@ public class SubsystemDefaultTest {
         scheduler.run();
         Assert.assertEquals(ca, sa.getCurrentCommand());
         Assert.assertEquals(1, ca.timesTerminated);
-        Assert.assertTrue(ca.wasInterrupted);
+        Assert.assertFalse(ca.wasInterrupted);
 
         scheduler.addCommand(cb);
         scheduler.run();
         Assert.assertEquals(cb, sa.getCurrentCommand());
         Assert.assertEquals(1, cb.timesLooped);
         Assert.assertEquals(2, ca.timesTerminated);
+        Assert.assertTrue(ca.wasInterrupted);
 
         ca.reset();
         cb.shouldRunNextLoop = false;
         scheduler.run();
-        Assert.assertEquals(ca, sa.getCurrentCommand());
         Assert.assertEquals(1, cb.timesTerminated);
+        Assert.assertEquals(ca, sa.getCurrentCommand());
     }
 
 }

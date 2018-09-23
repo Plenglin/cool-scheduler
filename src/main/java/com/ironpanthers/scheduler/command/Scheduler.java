@@ -19,6 +19,10 @@ public class Scheduler implements Iterable<Command> {
         sentinel.prev = sentinel;
     }
 
+    /**
+     * Add a new command to be called by this scheduler. Thread-safe.
+     * @param command the new command
+     */
     public void addCommand(Command command) {
         if (command != null) {
             commandsToAdd.add(command);
@@ -85,12 +89,7 @@ public class Scheduler implements Iterable<Command> {
         initializeCommandsAfter(iterStart);
     }
 
-    /**
-     * Run 1 iteration of this scheduler.
-     */
-    public void run() {
-        addNewCommands();
-
+    private void runAllCommands() {
         Command command = sentinel.next;
         while (command != sentinel) {
             if (!command._loop()) {
@@ -98,14 +97,32 @@ public class Scheduler implements Iterable<Command> {
             }
             command = command.next;
         }
+    }
 
+    private void addDefaultCommandsToSubsystems() {
+        Command iter = sentinel.prev;
         for (Subsystem subsystem: subsystems) {
             if (!subsystem.hasNewCommand) {
-                addCommand(subsystem.getDefaultCommand());
+                Command newCommand = subsystem.getDefaultCommand();
+                newCommand._initialize(this);
+                iter.next = newCommand;
+                newCommand.prev = iter;
+                subsystem.setDefaultCommand(newCommand);
+                iter = newCommand;
             }
             subsystem.hasNewCommand = false;
         }
+        sentinel.prev = iter;
+        iter.next = sentinel;
+    }
 
+    /**
+     * Run 1 iteration of this scheduler. Absolutely not thread-safe.
+     */
+    public void run() {
+        addNewCommands();
+        runAllCommands();
+        addDefaultCommandsToSubsystems();
         currentIteration++;
     }
 
