@@ -9,19 +9,22 @@ public abstract class Subsystem {
     protected Scheduler scheduler;
     boolean hasNewCommand = false;
 
-    private Supplier<Command> defaultCommandFactory = null;
-
-    /**
-     * Set the default command factory of this subsystem. Default commands must require this subsystem and only this subsystem.
-     * @param factory the default command factory
-     */
-    protected void setDefaultCommandFactory(Supplier<Command> factory) {
-        this.defaultCommandFactory = factory;
+    final void setCurrentCommand(Command currentCommand) {
+        this.currentCommand = currentCommand;
     }
 
-    public Command createDefaultCommand() {
-        if (defaultCommandFactory == null) return null;
-        Command command = defaultCommandFactory.get();
+    public final Command getCurrentCommand() {
+        return currentCommand;
+    }
+
+    /**
+     * Create the default command.
+     * @return Executed every time a default command is needed.
+     */
+    protected abstract Command createDefaultCommand();
+
+    final Command getDefaultCommand() {
+        Command command = createDefaultCommand();
         Set<Subsystem> required = command.getRequiredSubsystems();
         if (!required.contains(this)) {
             throw new IllegalArgumentException("A subsystem's default command must require the subsystem!");
@@ -30,10 +33,6 @@ public abstract class Subsystem {
             throw new IllegalArgumentException("A default command must require only 1 subsystem!");
         }
         return command;
-    }
-
-    public final Command getCurrentCommand() {
-        return currentCommand;
     }
 
 }

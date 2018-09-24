@@ -5,8 +5,10 @@ import com.ironpanthers.scheduler.command.Subsystem;
 
 public class TestSubsystem extends Subsystem {
 
-    public void setDefaultCommand(Command command) {
-        setDefaultCommandFactory(() -> command);
-    }
+    public Command defaultCommand;
 
+    @Override
+    protected Command createDefaultCommand() {
+        return defaultCommand;
+    }
 }

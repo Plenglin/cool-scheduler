@@ -58,7 +58,7 @@ public class Scheduler implements Iterable<Command> {
                     currentCommand._terminateInterrupted();
                 }
                 subsystem.hasNewCommand = true;
-                subsystem.currentCommand = command;
+                subsystem.setCurrentCommand(command);
             }
             command = command.next;
         }
@@ -104,6 +104,10 @@ public class Scheduler implements Iterable<Command> {
         for (Subsystem subsystem: subsystems) {
             if (!subsystem.hasNewCommand) {
                 Command newCommand = subsystem.createDefaultCommand();
+                if (newCommand == null) {
+                    return;
+                }
+
                 newCommand._initialize(this);
                 iter.next = newCommand;
                 newCommand.prev = iter;

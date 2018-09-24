@@ -14,7 +14,7 @@ public class SubsystemDefaultTest {
 
     @Before
     public void setUp() {
-        sa.setDefaultCommand(ca);
+        sa.defaultCommand = ca;
         scheduler.registerSubsystem(sa);
     }
 
