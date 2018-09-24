@@ -32,7 +32,7 @@ public class Scheduler implements Iterable<Command> {
     public void registerSubsystem(Subsystem subsystem) {
         subsystems.add(subsystem);
         subsystem.scheduler = this;
-        addCommand(subsystem.getDefaultCommand());
+        addCommand(subsystem.createDefaultCommand());
     }
 
     private void addCommandsFromQueue(Command command) {
@@ -103,12 +103,12 @@ public class Scheduler implements Iterable<Command> {
         Command iter = sentinel.prev;
         for (Subsystem subsystem: subsystems) {
             if (!subsystem.hasNewCommand) {
-                Command newCommand = subsystem.getDefaultCommand();
+                Command newCommand = subsystem.createDefaultCommand();
                 newCommand._initialize(this);
                 iter.next = newCommand;
                 newCommand.prev = iter;
-                subsystem.setDefaultCommand(newCommand);
                 iter = newCommand;
+                subsystem.currentCommand = newCommand;
             }
             subsystem.hasNewCommand = false;
         }
